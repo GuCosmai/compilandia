@@ -10,7 +10,7 @@ const novoSave=()=>({v:1,em:0,feitas:{},codigos:{},up:{},era:0,nome:"",cor:"",ve
 let S=novoSave();
 const G={g:null,tempo:0,modo:"edit",sala:null,iSala:0,t:null,inicio:null,
   heroi:{x:5,y:3,vx:5,vy:3,dir:"baixo",z:0,esc:1,vel:6,oculto:false,pulo:null},
-  moedasChao:[],inimigos:[],cortes:[],tiros:[],parts:[],pilaresAcesos:{},chefe:null,vida:5,vidaMax:5,imune:0,
+  moedasChao:[],inimigos:[],cortes:[],tiros:[],parts:[],amb:[],raios:[],textos:[],pilaresAcesos:{},chefe:null,vida:5,vidaMax:5,imune:0,leve:false,lentidao:0,
   tty:["COMPILANDIA/OS  1963","MEMORIA: 1 LINHA","MUNDO: NAO ENCONTRADO","",">"],
   eraVista:0,wipe:null,slide:null,p3:0,p3Alvo:0,yaw:-.55,tremor:0,clock:1,
   rodando:false,abortar:false,passoAPasso:false,continuar:null,linhaAtual:0,linhaErro:0,
@@ -72,8 +72,18 @@ function gasta(c){
 const msPasso=c=>c.rapido?130:220/G.clock;
 function anda(x,y,ms){
   const H=G.heroi,d=Math.abs(x-H.x)+Math.abs(y-H.y);
+  poeira(H.x,H.y);
   H.x=x;H.y=y;H.vel=d/(Math.max(ms,1)/1000);
 }
+function poeira(x,y){
+  if(G.auto||G.eraVista<4||!G.sala||G.parts.length>400)return;
+  const c=BIOMAS[G.sala.bio].chao[2];
+  for(let i=0;i<3;i++){
+    const a=Math.random()*6.3;
+    G.parts.push({x:x+.5+Math.cos(a)*.2,y:y+.84,z:.05,dx:Math.cos(a)*.5,dy:-.1,dz:.8,s:SC*1.5,c,v:.3,vida:.3});
+  }
+}
+function flutua(x,y,txt,c="#fff"){if(!G.auto)G.textos.push({x,y,txt,c,t:0,dur:.9})}
 function brilho(x,y,cor="#fff6c8",n=8){
   if(G.auto||G.parts.length>400)return;
   for(let i=0;i<n;i++){
@@ -87,6 +97,7 @@ function* chegar(x,y,c,t){
   if(t==="~"||t==="O"){
     yield{e:c.rapido?130:220};
     G.heroi.cai=.5;
+    if(G.sala)brilho(x,y,BIOMAS[G.sala.bio].agua[2],18);
     yield{e:380};
     throw new Falha(`O herói caiu ${t==="O"?"no buraco":"na água"} na linha ${G.linhaAtual}.`);
   }
@@ -113,7 +124,7 @@ const GF={
     const H=G.heroi,i=G.moedasChao.findIndex(m=>m.x===H.x&&m.y===H.y);
     if(i<0)return 0;
     const v=G.moedasChao.splice(i,1)[0].v;
-    brilho(H.x,H.y,"#f2c94c",6);Som.moeda();c.aviso(`pegar() devolveu ${v}`,"mudo");
+    brilho(H.x,H.y,"#f2c94c",6);Som.moeda();flutua(H.x,H.y,"+"+v,"#ffe08a");c.aviso(`pegar() devolveu ${v}`,"mudo");
     yield{e:120};
     return v;
   }},
@@ -169,7 +180,7 @@ const GF={
     G.tiros.push({x:H.x,y:H.y,tx:4.2,ty:4.2,t:0,dur:.3/G.clock,cor:{fogo:"#ff6a2c",agua:"#3fa0ff",planta:"#46d060"}[el]});Som.corte();
     yield{e:320};
     if(VENCE[B.esc]===el){
-      B.hp--;B.hit=.3;G.tremor=8;brilho(4.2,4.2,"#ff5c9c",14);Som.acerto();
+      B.hp--;B.hit=.3;G.tremor=8;brilho(4.2,4.2,"#ff5c9c",14);flutua(4.2,3.4,"-1","#ff5c9c");Som.acerto();
       if(B.hp<=0){B.hit=0;throw new Objetivo()}
     }else{
       c.aviso(`Escudo de ${B.esc}: ${el} não funcionou e custou um coração.`);
@@ -179,7 +190,7 @@ const GF={
   }},
   curar:{d:12,f:function*(a,l,c){
     gasta(c);G.vida=Math.min(G.vidaMax,G.vida+2);
-    brilho(G.heroi.x,G.heroi.y,"#7dff9c",12);Som.fx(660,.2,"triangle",.08);
+    brilho(G.heroi.x,G.heroi.y,"#7dff9c",12);flutua(G.heroi.x,G.heroi.y,"+2","#7dff9c");Som.fx(660,.2,"triangle",.08);
     yield{e:300};
     yield* turnoChefe(c);
   }},
@@ -198,6 +209,7 @@ const GF={
 function sorteiaEscudo(){const o=Object.keys(VENCE);G.chefe.esc=o[Math.floor(Math.random()*3)]}
 function* feridaHeroi(c){
   G.vida--;G.imune=.6;G.tremor=10;Som.acerto();
+  flutua(G.heroi.x,G.heroi.y,"-1","#ff5c6c");
   yield{e:200};
   if(G.vida<=0)throw new Falha("O herói ficou sem corações. Use vida() e curar() antes que seja tarde.");
 }
@@ -245,7 +257,7 @@ function carregaSala(i,crua){
   const sala=SALAS[i];G.sala=sala;G.iSala=i;
   const feita=!crua&&salaFeita(i);
   G.t=sala.mapa.map(l=>l.split(""));
-  G.inicio=null;G.moedasChao=[];G.inimigos=[];G.pilaresAcesos={};G.chefe=null;
+  G.inicio=null;G.moedasChao=[];G.inimigos=[];G.pilaresAcesos={};G.chefe=null;G.amb=[];
   for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){
     const c=G.t[y][x];
     if(c==="S"){G.inicio=[x,y];G.t[y][x]="."}
@@ -296,6 +308,7 @@ function tentaAndar(dir){
   if(t==="%")return fala("Trecho corrompido: só o código atravessa. Procure o terminal.");
   if(t==="C"||t==="V")return fala("Trancado por enquanto. Só um programa abre isso.");
   if("#T~ON".includes(t))return;
+  poeira(H.x,H.y);
   H.x=nx;H.y=ny;H.vel=3+S.vel*2;Som.passo();
 }
 function abreTerminal(){
@@ -416,7 +429,8 @@ function mudaEra(i){
     if(G.auto||REDUZ||de===i){G.p3=ERAS[i].id==="3d"?1:0;G.p3Alvo=G.p3;return res()}
     if(ERAS[i].id==="3d"){G.p3=0;G.p3Alvo=1;G.wipe=null;setTimeout(res,3400);return}
     G.p3Alvo=G.p3;
-    G.wipe={de,para:i,t:0,dur:1.5,fim(){G.p3=G.p3Alvo=0;res()}};
+    const tipo=i===de+1?{1:"liga",2:"blocos",3:"linha",4:"circulo",5:"mosaico"}[i]:"linha";
+    G.wipe={de,para:i,t:0,dur:tipo==="mosaico"?1.8:1.5,tipo,fim(){G.p3=G.p3Alvo=0;res()}};
   });
 }
 async function demonstraMelodia(){
@@ -433,6 +447,7 @@ async function abreBau(){
   if(!p&&G.sala.bau){p=G.sala.bau;G.t[p[1]][p[0]]="C";if(!G.auto)await dorme(350)}
   if(!p)return;
   G.t[p[1]][p[0]]="c";brilho(p[0],p[1],"#ffe9a0",26);Som.abre();
+  if(!G.auto)G.raios.push({x:p[0],y:p[1],t:0,dur:1.2});
   if(!G.auto)await dorme(650);
 }
 async function curaSala(){
@@ -802,10 +817,16 @@ function atualiza(dt){
   G.tiros=G.tiros.filter(q=>q.t<q.dur);
   for(const q of G.parts){q.x+=q.dx*dt;q.y+=q.dy*dt;q.dz-=9*dt;q.z=Math.max(0,q.z+q.dz*dt);q.v-=dt}
   G.parts=G.parts.filter(q=>q.v>0);
+  for(const r of G.raios)r.t+=dt;
+  G.raios=G.raios.filter(r=>r.t<r.dur);
+  for(const q of G.textos)q.t+=dt;
+  G.textos=G.textos.filter(q=>q.t<q.dur);
+  atualizaAmbiente(dt);
 }
 let ultT=0;
 function quadro(t){
   const dt=Math.min(.05,(t-ultT)/1000||0);ultT=t;
+  if(!G.leve&&G.eraVista>=5){G.lentidao=G.lentidao*.98+dt*.02;if(G.lentidao>.032)G.leve=true}
   atualiza(dt);desenha();
   requestAnimationFrame(quadro);
 }

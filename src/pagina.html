@@ -71,9 +71,21 @@ body{background:var(--bg);color:var(--fg);font-family:var(--f-txt);font-size:var
 #cabine{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.7fr) minmax(340px,1fr);gap:12px}
 #palco{min-width:0;min-height:0;display:flex;flex-direction:column;gap:8px;align-items:center}
 #tela{position:relative;width:min(100%,calc((100dvh - 190px)*1.6));aspect-ratio:8/5;max-width:100%;background:#000;border:var(--borda) solid var(--linha);border-radius:var(--raio);overflow:hidden;flex:none}
-#cv{display:block;width:100%;height:100%;image-rendering:pixelated}
-#crt{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.26) 0 2px,transparent 2px 4px);display:none}
-:root:not([data-era]) #crt,:root[data-era="tty"] #crt,:root[data-era="ascii"] #crt,:root[data-era="1bit"] #crt{display:block}
+#cv{display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+/* A moldura da tela conta a época: monitor de fósforo, tela chapada, portátil de LCD, televisor, console e nada */
+#tela{border-width:12px;border-style:solid;border-color:#2c1d0a;border-radius:20px;box-shadow:0 0 0 2px var(--linha),0 0 46px rgba(255,170,50,.14)}
+#crt{position:absolute;inset:0;pointer-events:none;border-radius:8px;background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 2px,transparent 2px 4px),radial-gradient(ellipse at center,transparent 56%,rgba(0,0,0,.6) 100%);box-shadow:inset 0 0 60px rgba(255,170,60,.16);animation:fosforo 5s steps(40) infinite}
+@keyframes fosforo{0%,100%{opacity:1}48%{opacity:.93}52%{opacity:1}74%{opacity:.96}}
+:root[data-era="1bit"] #tela{border-color:#e8e8e0;border-width:3px;border-radius:2px;box-shadow:6px 6px 0 #555}
+:root[data-era="1bit"] #crt{background:none;box-shadow:none;animation:none}
+:root[data-era="4tons"] #tela{border-color:#4a5442;border-width:16px;border-radius:12px 12px 34px 12px;box-shadow:0 0 0 2px #306230,4px 6px 0 #5f7a12}
+:root[data-era="4tons"] #crt{border-radius:0;animation:none;background:repeating-linear-gradient(0deg,rgba(15,56,15,.1) 0 1px,transparent 1px 4px),repeating-linear-gradient(90deg,rgba(15,56,15,.1) 0 1px,transparent 1px 4px);box-shadow:inset 3px 3px 10px rgba(0,0,0,.45)}
+:root[data-era="8bit"] #tela{border-color:#101028;border-width:14px;border-radius:30px;box-shadow:0 0 0 3px var(--linha),0 8px 0 #06061a}
+:root[data-era="8bit"] #crt{border-radius:16px;animation:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 2px,transparent 2px 4px),radial-gradient(ellipse at center,transparent 66%,rgba(0,0,0,.42) 100%);box-shadow:inset 0 0 26px rgba(120,160,255,.14)}
+:root[data-era="16bit"] #tela{border-color:var(--linha);border-width:4px;border-radius:12px;box-shadow:0 10px 34px rgba(8,4,30,.5)}
+:root[data-era="16bit"] #crt{display:none}
+:root[data-era="3d"] #tela{border-color:var(--linha);border-width:1px;border-radius:14px;box-shadow:0 14px 50px rgba(0,0,0,.55),0 0 60px rgba(76,194,255,.1)}
+:root[data-era="3d"] #crt{display:none}
 #fala{width:min(100%,calc((100dvh - 190px)*1.6));display:flex;gap:10px;align-items:flex-start;background:var(--painel);border:var(--borda) solid var(--linha);border-radius:var(--raio);padding:7px 11px;min-height:3.1em;flex:none}
 #falaNome{color:var(--forte);flex:none}
 #falaTxt{min-width:0;overflow-wrap:anywhere}
@@ -155,6 +167,7 @@ code{font-family:var(--f-cod);font-size:.98em;color:var(--forte)}
 }
 @media (max-width:520px){
   :root{--s-tit:27px}
+  :root #tela,:root[data-era] #tela{border-width:5px}
   #eras span{display:none}
   #eras small{font-size:calc(var(--s-mini) - 1px)}
 }
@@ -172,7 +185,7 @@ code{font-family:var(--f-cod);font-size:.98em;color:var(--forte)}
   </header>
   <main id="cabine">
     <section id="palco" aria-label="Tela do jogo">
-      <div id="tela"><canvas id="cv" width="768" height="480" aria-label="Mundo de Compilândia"></canvas><div id="crt"></div></div>
+      <div id="tela"><canvas id="cv" width="1024" height="640" aria-label="Mundo de Compilândia"></canvas><div id="crt"></div></div>
       <div id="fala"><span id="falaNome">Bit:</span><span id="falaTxt" aria-live="polite"></span></div>
       <div id="controles" hidden>
         <div id="dpad">
