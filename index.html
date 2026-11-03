@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#100a03">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23100a03'/><rect x='5' y='3' width='6' height='10' fill='%2328e6d0'/><rect x='6' y='6' width='1' height='2' fill='%230a0612'/><rect x='9' y='6' width='1' height='2' fill='%230a0612'/></svg>">
 <title>Compilândia</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&family=Pixelify+Sans:wght@400;600&family=Press+Start+2P&family=VT323&display=swap">
@@ -1507,14 +1508,19 @@ function climaPlano(g,bio){
   }
   g.restore();
 }
+/* Uma cópia só por quadro: desenhar a tela sobre si mesma copiaria tudo a cada faixa */
+function fotoDaTela(g){
+  MING.globalCompositeOperation="copy";MING.drawImage(g.canvas,0,0);MING.globalCompositeOperation="source-over";
+}
 function ondaDeCalor(g){
   if(G.leve||REDUZ)return;
-  const c=g.canvas,a=K*1.7;
-  for(let y=0;y<H;y+=8)g.drawImage(c,0,y,W,8,Math.sin(y*.035+G.tempo*3)*a,y,W,8);
+  fotoDaTela(g);
+  const a=K*1.7;
+  for(let y=0;y<H;y+=8)g.drawImage(MIN,0,y,W,8,Math.sin(y*.035+G.tempo*3)*a,y,W,8);
 }
 function falhaDeTela(g){
-  const c=g.canvas;
-  for(let i=0;i<7;i++){const y=Math.random()*H,h=4+Math.random()*30;g.drawImage(c,0,y,W,h,(Math.random()-.5)*46,y,W,h)}
+  fotoDaTela(g);
+  for(let i=0;i<7;i++){const y=Math.random()*H,h=4+Math.random()*30;g.drawImage(MIN,0,y,W,h,(Math.random()-.5)*46,y,W,h)}
 }
 /* Luz: escurece o ambiente de cada bioma e depois soma as fontes de luz por cima */
 function desenhaLuzes(g,era){
@@ -2692,8 +2698,9 @@ function atualiza(dt){
 }
 let ultT=0;
 function quadro(t){
-  const dt=Math.min(.05,(t-ultT)/1000||0);ultT=t;
-  if(!G.leve&&G.eraVista>=5){G.lentidao=G.lentidao*.98+dt*.02;if(G.lentidao>.032)G.leve=true}
+  const bruto=(t-ultT)/1000||0,dt=Math.min(.05,bruto);ultT=t;
+  /* Quadros muito espaçados são janela em segundo plano, não aparelho lento */
+  if(!G.leve&&G.eraVista>=5&&bruto<.25){G.lentidao=G.lentidao*.98+dt*.02;if(G.lentidao>.032)G.leve=true}
   atualiza(dt);desenha();
   requestAnimationFrame(quadro);
 }

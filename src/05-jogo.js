@@ -825,8 +825,9 @@ function atualiza(dt){
 }
 let ultT=0;
 function quadro(t){
-  const dt=Math.min(.05,(t-ultT)/1000||0);ultT=t;
-  if(!G.leve&&G.eraVista>=5){G.lentidao=G.lentidao*.98+dt*.02;if(G.lentidao>.032)G.leve=true}
+  const bruto=(t-ultT)/1000||0,dt=Math.min(.05,bruto);ultT=t;
+  /* Quadros muito espaçados são janela em segundo plano, não aparelho lento */
+  if(!G.leve&&G.eraVista>=5&&bruto<.25){G.lentidao=G.lentidao*.98+dt*.02;if(G.lentidao>.032)G.leve=true}
   atualiza(dt);desenha();
   requestAnimationFrame(quadro);
 }

@@ -164,14 +164,19 @@ function climaPlano(g,bio){
   }
   g.restore();
 }
+/* Uma cópia só por quadro: desenhar a tela sobre si mesma copiaria tudo a cada faixa */
+function fotoDaTela(g){
+  MING.globalCompositeOperation="copy";MING.drawImage(g.canvas,0,0);MING.globalCompositeOperation="source-over";
+}
 function ondaDeCalor(g){
   if(G.leve||REDUZ)return;
-  const c=g.canvas,a=K*1.7;
-  for(let y=0;y<H;y+=8)g.drawImage(c,0,y,W,8,Math.sin(y*.035+G.tempo*3)*a,y,W,8);
+  fotoDaTela(g);
+  const a=K*1.7;
+  for(let y=0;y<H;y+=8)g.drawImage(MIN,0,y,W,8,Math.sin(y*.035+G.tempo*3)*a,y,W,8);
 }
 function falhaDeTela(g){
-  const c=g.canvas;
-  for(let i=0;i<7;i++){const y=Math.random()*H,h=4+Math.random()*30;g.drawImage(c,0,y,W,h,(Math.random()-.5)*46,y,W,h)}
+  fotoDaTela(g);
+  for(let i=0;i<7;i++){const y=Math.random()*H,h=4+Math.random()*30;g.drawImage(MIN,0,y,W,h,(Math.random()-.5)*46,y,W,h)}
 }
 /* Luz: escurece o ambiente de cada bioma e depois soma as fontes de luz por cima */
 function desenhaLuzes(g,era){
