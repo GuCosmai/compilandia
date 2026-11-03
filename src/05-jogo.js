@@ -680,7 +680,7 @@ function montaEras(){
   const ol=$("#eras");ol.textContent="";
   ERAS.forEach((e,i)=>{
     const li=document.createElement("li"),b=document.createElement("button"),ok=i<=S.era;
-    b.type="button";b.disabled=!ok||G.modo==="run";
+    b.type="button";b.disabled=!ok||G.modo==="run"||(i===0&&!!G.t);
     b.className=i===G.eraVista?"atual":"";
     b.setAttribute("aria-label",ok?`Ver o jogo em ${e.nome}, ${e.ano}`:"Era ainda não destravada");
     const a=document.createElement("small"),n=document.createElement("span");

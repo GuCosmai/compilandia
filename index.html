@@ -1156,7 +1156,7 @@ const MISSOES=[
  dicas:["Primeiro complete contra(e): falta um caso para água e um para planta.","Sem curar, o herói morre antes. No while, verifique a vida antes de atacar.","while chefe_vivo():\n    if vida() < 2:\n        curar()\n    else:\n        magia(contra(escudo()))"],
  prepara(){G.chefe={hp:8,max:8,esc:"fogo",turno:0,ativo:true,hit:0};G.vida=3;G.vidaMax=3;sorteiaEscudo()},
  confere:()=>({ok:false,msg:"O programa acabou e o chefe continua de pé. Use um while chefe_vivo():"}),
- ganha:{era:6,titulo:"3D",texto:"O mundo saiu do plano. Cada bloco ganhou altura e a câmera pode girar com as teclas Q e E. A linha do tempo no topo deixa você voltar a qualquer era.",aprendeu:"Variáveis, decisões, repetições, funções e listas juntas resolvem problemas grandes."},
+ ganha:{era:6,titulo:"3D",texto:"O mundo saiu do plano. Cada bloco ganhou altura e a câmera pode girar com as teclas Q e E. A linha do tempo no topo deixa você voltar às eras anteriores.",aprendeu:"Variáveis, decisões, repetições, funções e listas juntas resolvem problemas grandes."},
  depois:"Compilândia está de pé, e foi você quem escreveu. O terminal desta sala agora é livre."},
 {id:"criador",sala:11,titulo:"Modo Criador",conceito:"Sem regras",memoria:0,par:0,livre:true,
  texto:`<p>Sem missão e sem limite. O mundo é seu, e tudo que você aprendeu funciona aqui.</p><p><code>pintar(x, y, "agua")</code> muda uma casa (x de 0 a 15, y de 0 a 9). Tipos: <code>"chao"</code>, <code>"agua"</code>, <code>"parede"</code>, <code>"arvore"</code>. <code>fogos()</code> solta fogos.</p>`,
@@ -2120,7 +2120,7 @@ function montaEras(){
   const ol=$("#eras");ol.textContent="";
   ERAS.forEach((e,i)=>{
     const li=document.createElement("li"),b=document.createElement("button"),ok=i<=S.era;
-    b.type="button";b.disabled=!ok||G.modo==="run";
+    b.type="button";b.disabled=!ok||G.modo==="run"||(i===0&&!!G.t);
     b.className=i===G.eraVista?"atual":"";
     b.setAttribute("aria-label",ok?`Ver o jogo em ${e.nome}, ${e.ano}`:"Era ainda não destravada");
     const a=document.createElement("small"),n=document.createElement("span");
