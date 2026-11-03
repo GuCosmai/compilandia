@@ -2090,7 +2090,7 @@ function aoEditar(){
   atualizaEditor();
 }
 function abrirMissao(m){
-  G.missao=m;G.modo="edit";G.dicasUsadas=0;G.falhas=0;G.ultimo="";
+  G.missao=m;G.modo="edit";G.dicasUsadas=0;G.falhas=0;G.ultimo="";G.proxima=null;
   if(m.sala!=null&&!m.livre)preparaSala(m);
   ed.value=S.codigos[m.id]??m.inicial;
   G.linhaErro=0;limpaSaida();
@@ -2228,7 +2228,8 @@ function atualiza(dt){
   for(const e of G.inimigos){const a=e.x-e.vx,b=e.y-e.vy,d=Math.hypot(a,b);if(d>.01){const s=Math.min(d,5*dt);e.vx+=a/d*s;e.vy+=b/d*s}else{e.vx=e.x;e.vy=e.y}}
   if(G.modo==="combate")atualizaCombate(dt);
   if((G.modo==="explora"||G.modo==="combate")&&S.up.teclado&&!G.slide&&!G.golpeAtivo&&Math.hypot(H.x-H.vx,H.y-H.vy)<.01){
-    const k=[...G.teclas].pop();
+    const k=[...G.teclas].pop()||G.proxima;
+    G.proxima=null;
     if(k)tentaAndar(k);
   }
   if(G.chefe&&G.chefe.hit>0)G.chefe.hit-=dt;
@@ -2278,7 +2279,7 @@ addEventListener("keydown",e=>{
   if(e.target===ed)return;
   if(!$("#evolucao").hidden||!$("#menu").hidden)return;
   const k=TECLAS[e.key];
-  if(k&&(G.modo==="explora"||G.modo==="combate")){e.preventDefault();G.teclas.delete(k);G.teclas.add(k);Som.liga();return}
+  if(k&&(G.modo==="explora"||G.modo==="combate")){e.preventDefault();G.teclas.delete(k);G.teclas.add(k);if(!e.repeat)G.proxima=k;Som.liga();return}
   if(e.key===" "&&(G.modo==="explora"||G.modo==="combate")){e.preventDefault();disparaGolpe();return}
   if(e.key==="Enter"&&G.modo==="explora"){const[a,b]=DIRS[G.heroi.dir];if(tileEm(G.heroi.x+a,G.heroi.y+b)==="M"){e.preventDefault();abreTerminal()}return}
   if(ERAS[G.eraVista].id==="3d"){if(e.key==="q"||e.key==="Q")G.yaw=Math.max(-1.2,G.yaw-.2);if(e.key==="e"||e.key==="E")G.yaw=Math.min(1.2,G.yaw+.2)}
@@ -2288,7 +2289,7 @@ addEventListener("blur",()=>G.teclas.clear());
 $("#cv").addEventListener("click",()=>{if(G.modo==="edit"&&S.up.teclado)fecharEditor()});
 for(const b of document.querySelectorAll("[data-k]")){
   const k=b.dataset.k;
-  b.addEventListener("pointerdown",e=>{e.preventDefault();G.teclas.add(k);Som.liga()});
+  b.addEventListener("pointerdown",e=>{e.preventDefault();G.teclas.add(k);G.proxima=k;Som.liga()});
   for(const ev of["pointerup","pointerleave","pointercancel"])b.addEventListener(ev,()=>G.teclas.delete(k));
 }
 $("#btGolpe").addEventListener("pointerdown",e=>{e.preventDefault();disparaGolpe()});
